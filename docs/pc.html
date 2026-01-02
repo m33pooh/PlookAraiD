@@ -1,0 +1,329 @@
+import React, { useState } from 'react';
+import { Search, MapPin, Droplets, TrendingUp, TrendingDown, Sun, Users, Calendar, ArrowRight, ChevronLeft, Sprout, DollarSign, Truck, Moon, Menu, Bell, Home, PieChart, Settings, FileText, MoreHorizontal } from 'lucide-react';
+
+const PlookAraiDeeDesktop = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedCrop, setSelectedCrop] = useState(null);
+
+  // Mock Data (ชุดเดิม)
+  const recommendedCrops = [
+    {
+      id: 1,
+      name: "ข้าวโพดเลี้ยงสัตว์ (หลังนา)",
+      type: "crop",
+      matchScore: 95,
+      price: "10.50 - 11.00",
+      unit: "บาท/กก.",
+      trend: "up",
+      demand: "สูงมาก",
+      harvestTime: "90-110 วัน",
+      buyers: 3,
+      profitEstimate: "4,500 - 6,000",
+      imgColor: "bg-amber-900/40",
+      iconColor: "text-amber-400",
+      desc: "เหมาะสำหรับพื้นที่ดอน ใช้น้ำน้อย ตลาดมีความต้องการสูงตลอดปีเนื่องจากอุตสาหกรรมอาหารสัตว์ขยายตัว"
+    },
+    {
+      id: 2,
+      name: "มะเขือเทศโรงงาน",
+      type: "crop",
+      matchScore: 88,
+      price: "4.50 - 5.00",
+      unit: "บาท/กก.",
+      trend: "stable",
+      demand: "ปานกลาง",
+      harvestTime: "75-90 วัน",
+      buyers: 1,
+      profitEstimate: "8,000 - 12,000",
+      imgColor: "bg-rose-900/40",
+      iconColor: "text-rose-400",
+      desc: "โรงงานแปรรูปในพื้นที่กำลังต้องการวัตถุดิบเกรด A เพื่อผลิตซอส ต้องระวังโรคราเน่าในช่วงฝน"
+    },
+    {
+      id: 3,
+      name: "ปลานิล (บ่อดิน)",
+      type: "livestock",
+      matchScore: 82,
+      price: "45 - 55",
+      unit: "บาท/กก.",
+      trend: "down",
+      demand: "คงที่",
+      harvestTime: "4-6 เดือน",
+      buyers: 5,
+      profitEstimate: "15,000+",
+      imgColor: "bg-sky-900/40",
+      iconColor: "text-sky-400",
+      desc: "เลี้ยงง่าย โตไว แต่ช่วงนี้ราคาหน้าบ่อทรงตัว แนะนำให้แปรรูปเบื้องต้นเพื่อเพิ่มมูลค่า"
+    },
+    {
+      id: 4,
+      name: "พริกขี้หนูสวน",
+      type: "crop",
+      matchScore: 78,
+      price: "120 - 150",
+      unit: "บาท/กก.",
+      trend: "up",
+      demand: "สูง",
+      harvestTime: "90 วัน",
+      buyers: 8,
+      profitEstimate: "20,000+",
+      imgColor: "bg-red-900/40",
+      iconColor: "text-red-500",
+      desc: "ราคาสูงมากในช่วงเทศกาล แต่ต้องใช้แรงงานเก็บเกี่ยวเยอะ และมีความเสี่ยงเรื่องโรคแอนทราคโนส"
+    }
+  ];
+
+  const marketPrices = [
+    { name: "ข้าวหอมมะลิ (105)", price: "14,500", unit: "บาท/ตัน", trend: "up", change: "+250" },
+    { name: "ยางพารา (แผ่นดิบ)", price: "52.00", unit: "บาท/กก.", trend: "down", change: "-1.50" },
+    { name: "มันสำปะหลัง", price: "3.10", unit: "บาท/กก.", trend: "up", change: "+0.10" },
+    { name: "ปาล์มน้ำมัน", price: "6.50", unit: "บาท/กก.", trend: "up", change: "+0.25" },
+    { name: "ทุเรียน (หมอนทอง)", price: "140", unit: "บาท/กก.", trend: "stable", change: "0.00" },
+  ];
+
+  return (
+    <div className="flex h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden">
+      
+      {/* Sidebar */}
+      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col hidden md:flex">
+        <div className="p-6 flex items-center gap-3">
+          <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
+            <Sprout size={24} />
+          </div>
+          <span className="font-bold text-xl text-white tracking-tight">PlookAraiDee</span>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-2 mt-4">
+          <NavItem icon={<Home size={20}/>} label="ภาพรวม (Dashboard)" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
+          <NavItem icon={<PieChart size={20}/>} label="วิเคราะห์พืช (Analyze)" active={activeTab === 'analyze'} onClick={() => setActiveTab('analyze')} />
+          <NavItem icon={<TrendingUp size={20}/>} label="ราคาตลาด (Market)" />
+          <NavItem icon={<FileText size={20}/>} label="สัญญาซื้อขาย (Contracts)" />
+          <NavItem icon={<Calendar size={20}/>} label="ปฏิทินการผลิต" />
+        </nav>
+
+        <div className="p-4 border-t border-slate-800">
+          <div className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl cursor-pointer hover:bg-slate-800 transition">
+            <div className="w-10 h-10 bg-gradient-to-tr from-emerald-500 to-sky-500 rounded-full"></div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white truncate">สมชาย ใจดี</p>
+              <p className="text-xs text-slate-400 truncate">เกษตรกร • นครปฐม</p>
+            </div>
+            <Settings size={16} className="text-slate-400" />
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0">
+        
+        {/* Top Header */}
+        <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-6 sticky top-0 z-20">
+          <div className="flex items-center text-slate-400 text-sm gap-2">
+            <span className="text-emerald-400">หน้าหลัก</span>
+            <span className="text-slate-600">/</span>
+            <span>ภาพรวมการผลิต</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={16} />
+              <input type="text" placeholder="ค้นหาพืช, ข่าวสาร..." className="bg-slate-800 border border-slate-700 text-sm rounded-full pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-500 text-slate-200 w-64" />
+            </div>
+            <button className="relative p-2 text-slate-400 hover:text-white transition">
+              <Bell size={20} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-slate-900"></span>
+            </button>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-8">
+          
+          <div className="max-w-6xl mx-auto space-y-8">
+            
+            {/* Hero / Filter Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left: Input Analysis */}
+              <div className="lg:col-span-2 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                   <Sprout size={200} />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">เริ่มวางแผนการปลูกใหม่</h2>
+                <p className="text-slate-400 mb-6">ระบบ AI จะช่วยวิเคราะห์ความเหมาะสมจาก ดิน น้ำ และความต้องการตลาด</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                   <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-700 hover:border-emerald-500/50 transition cursor-pointer group">
+                      <div className="flex items-center gap-3 mb-2">
+                        <MapPin size={18} className="text-emerald-400" />
+                        <span className="text-xs font-bold text-slate-500 uppercase">พื้นที่</span>
+                      </div>
+                      <p className="font-semibold text-slate-200 group-hover:text-emerald-400 transition">อ.เมือง, นครปฐม</p>
+                   </div>
+                   <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-700 hover:border-sky-500/50 transition cursor-pointer group">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Droplets size={18} className="text-sky-400" />
+                        <span className="text-xs font-bold text-slate-500 uppercase">แหล่งน้ำ</span>
+                      </div>
+                      <p className="font-semibold text-slate-200 group-hover:text-sky-400 transition">ชลประทาน (ตลอดปี)</p>
+                   </div>
+                   <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-700 hover:border-amber-500/50 transition cursor-pointer group">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Sun size={18} className="text-amber-400" />
+                        <span className="text-xs font-bold text-slate-500 uppercase">ขนาด</span>
+                      </div>
+                      <p className="font-semibold text-slate-200 group-hover:text-amber-400 transition">10 ไร่</p>
+                   </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg shadow-emerald-900/50 transition transform active:scale-95">
+                    วิเคราะห์ข้อมูล <ArrowRight size={18} className="ml-2" />
+                  </button>
+                  <button className="px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                    ประวัติการปลูก
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Weather / Quick Stats */}
+              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-lg flex flex-col justify-between">
+                 <div>
+                   <h3 className="font-bold text-slate-200 mb-4 flex items-center"><Sun size={18} className="mr-2 text-amber-400"/> สภาพอากาศวันนี้</h3>
+                   <div className="flex items-center justify-between mb-4">
+                     <div>
+                       <span className="text-4xl font-bold text-white">32°C</span>
+                       <p className="text-slate-400 text-sm mt-1">ฟ้าโปร่ง แดดจัด</p>
+                     </div>
+                     <Sun size={48} className="text-amber-500 animate-pulse" />
+                   </div>
+                   <div className="space-y-3">
+                     <div className="flex justify-between text-sm">
+                       <span className="text-slate-500">ความชื้น</span>
+                       <span className="text-slate-200 font-medium">65%</span>
+                     </div>
+                     <div className="flex justify-between text-sm">
+                       <span className="text-slate-500">โอกาสฝน</span>
+                       <span className="text-slate-200 font-medium">10%</span>
+                     </div>
+                   </div>
+                 </div>
+                 <div className="bg-sky-900/20 p-3 rounded-lg border border-sky-900/50 mt-4">
+                   <p className="text-xs text-sky-300 font-medium">💧 แนะนำ: ควรรดน้ำช่วงเช้า หลีกเลี่ยงช่วงแดดจัด</p>
+                 </div>
+              </div>
+            </div>
+
+            {/* Content: Recommended & Market */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              
+              {/* Main List: Recommendations */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white flex items-center">
+                    <Sprout className="mr-2 text-emerald-400" /> พืชแนะนำสำหรับคุณ
+                  </h3>
+                  <button className="text-sm text-emerald-400 hover:underline">ดูทั้งหมด</button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {recommendedCrops.map((crop) => (
+                    <div key={crop.id} className="bg-slate-800 p-5 rounded-2xl border border-slate-700 hover:border-emerald-500/50 hover:bg-slate-800/80 transition group cursor-pointer relative overflow-hidden">
+                       <div className="absolute top-0 right-0 bg-emerald-900/80 text-emerald-400 text-xs font-bold px-3 py-1 rounded-bl-xl">
+                          Match {crop.matchScore}%
+                       </div>
+                       <div className="flex items-start gap-4 mb-4">
+                          <div className={`w-14 h-14 ${crop.imgColor} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                            <Sprout size={24} className={crop.iconColor} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-lg text-slate-100">{crop.name}</h4>
+                            <p className="text-xs text-slate-400 mt-1 line-clamp-2">{crop.desc}</p>
+                          </div>
+                       </div>
+                       
+                       <div className="grid grid-cols-2 gap-2 text-sm bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                          <div>
+                            <p className="text-xs text-slate-500">ราคาคาดการณ์</p>
+                            <p className="font-bold text-emerald-400">{crop.price}</p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-xs text-slate-500">กำไร/ไร่</p>
+                             <p className="font-bold text-slate-200">{crop.profitEstimate}</p>
+                          </div>
+                       </div>
+                       
+                       <div className="mt-4 flex gap-2">
+                         <button className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-sm py-2 rounded-lg font-bold transition">วางแผน</button>
+                         <button className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm py-2 rounded-lg font-medium transition">ดูตลาด</button>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sidebar Right: Market Prices */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white flex items-center">
+                    <TrendingUp className="mr-2 text-amber-400" /> ราคาตลาดวันนี้
+                  </h3>
+                </div>
+                <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-900 text-slate-400 font-medium">
+                      <tr>
+                        <th className="px-4 py-3">สินค้า</th>
+                        <th className="px-4 py-3 text-right">ราคา</th>
+                        <th className="px-4 py-3 text-right">เปลี่ยนแปลง</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700">
+                      {marketPrices.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-slate-700/50 transition">
+                          <td className="px-4 py-3 font-medium text-slate-200">{item.name}</td>
+                          <td className="px-4 py-3 text-right text-slate-300">{item.price}</td>
+                          <td className={`px-4 py-3 text-right font-bold ${item.trend === 'up' ? 'text-emerald-400' : item.trend === 'down' ? 'text-rose-400' : 'text-slate-400'}`}>
+                             {item.change}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="p-3 bg-slate-900/50 text-center border-t border-slate-700">
+                    <button className="text-sm text-slate-400 hover:text-emerald-400 transition">ดูราคาทั้งหมด</button>
+                  </div>
+                </div>
+
+                <div className="mt-6 bg-rose-900/20 border border-rose-900/50 rounded-2xl p-4">
+                   <h4 className="font-bold text-rose-400 flex items-center mb-2">
+                     <Bell size={16} className="mr-2"/> ประกาศด่วน
+                   </h4>
+                   <p className="text-sm text-slate-300">
+                     แจ้งเตือนการระบาดของ "หนอนกระทู้ข้าวโพด" ในเขตอำเภอกำแพงแสน โปรดเฝ้าระวังแปลงปลูกของท่าน
+                   </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// Helper Component for Sidebar Items
+const NavItem = ({ icon, label, active, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
+      active 
+        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' 
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+    }`}
+  >
+    {icon}
+    <span>{label}</span>
+  </button>
+);
+
+export default PlookAraiDeeDesktop;

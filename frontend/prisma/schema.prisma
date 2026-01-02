@@ -1,0 +1,727 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Enums (ตัวเลือกแบบคงที่) ---
+enum Role {
+  FARMER
+  BUYER
+  ADMIN
+}
+
+enum WaterSource {
+  IRRIGATION
+  GROUNDWATER
+  RAIN
+}
+
+enum ProductCategory {
+  CROP
+  LIVESTOCK
+  AQUATIC
+}
+
+enum DemandStatus {
+  OPEN
+  CLOSED
+  FULFILLED
+}
+
+enum CultivationStatus {
+  PLANNING
+  GROWING
+  HARVESTED
+  SOLD
+}
+
+enum ContractStatus {
+  DRAFT
+  SIGNED
+  COMPLETED
+  CANCELLED
+}
+
+enum SensorType {
+  SOIL_MOISTURE
+  SOIL_PH
+  TEMPERATURE
+  HUMIDITY
+  LIGHT
+  RAIN
+  WIND
+}
+
+// --- Waste & By-product Exchange ---
+enum WasteCategory {
+  RICE_STRAW
+  CORN_COB
+  SUGARCANE_LEAVES
+  ANIMAL_MANURE
+  FRUIT_WASTE
+  VEGETABLE_WASTE
+  OTHER
+}
+
+enum WasteListingStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  EXPIRED
+}
+
+// --- Gamification ---
+enum QuestType {
+  DAILY_LOGIN
+  LOG_ACTIVITY
+  PHOTO_UPLOAD
+  MARKET_CHECK
+  PLAN_UPDATE
+  IOT_CHECK
+}
+
+enum TransactionType {
+  EARNED
+  REDEEMED
+  EXPIRED
+  BONUS
+}
+
+// --- Notification System ---
+enum NotificationType {
+  PRICE_ALERT
+  ACTIVITY_REMINDER
+  WEATHER_ALERT
+  CONTRACT_STATUS
+  SERVICE_BOOKING
+  QUEST_REWARD
+  SYSTEM
+}
+
+enum NotificationChannel {
+  IN_APP
+  PUSH
+  LINE
+}
+
+// --- Models (ตารางข้อมูล) ---
+
+model User {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(FARMER)
+  phoneNumber   String?
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  profile       UserProfile?
+  farms         Farm[]          // เฉพาะ Farmer
+  buyRequests   BuyRequest[]    // เฉพาะ Buyer
+  contractsAsFarmer Contract[]  @relation("FarmerContracts")
+
+  contractsAsBuyer  Contract[]  @relation("BuyerContracts")
+  services          Service[]       // Provided services
+  serviceBookings   ServiceBooking[] // Booked services
+
+  // Logistics & Transport
+  transportVehicles TransportVehicle[] @relation("OwnedVehicles")
+  transportRequests TransportRequest[] @relation("FarmerTransportRequests")
+  driverRoutes      TransportRoute[]   @relation("DriverRoutes")
+
+  // Knowledge Base
+  authoredArticles  KnowledgeArticle[] @relation("AuthoredArticles")
+
+  // Gamification
+  gamificationPoints Int @default(0)
+  questCompletions   QuestCompletion[]
+  pointTransactions  PointTransaction[]
+
+  // Waste Exchange
+  wasteListings      BiomassListing[] @relation("SellerListings")
+
+  // Notifications
+  notifications           Notification[]
+  priceAlerts             PriceAlert[]
+  notificationPreference  NotificationPreference?
+
+  @@map("users")
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  fullName    String?
+  address     String?  @db.Text
+  bio         String?  @db.Text
+  avatarUrl   String?
+  locationLat Decimal? @db.Decimal(10, 8)
+  locationLng Decimal? @db.Decimal(11, 8)
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Farm {
+  id          String      @id @default(cuid())
+  farmerId    String
+  name        String
+  locationLat Decimal     @db.Decimal(10, 8)
+  locationLng Decimal     @db.Decimal(11, 8)
+  areaSize    Decimal     @db.Decimal(10, 2) // หน่วย: ไร่
+  soilType    String?
+  waterSource WaterSource
+
+  // Relations
+  farmer       User          @relation(fields: [farmerId], references: [id])
+  cultivations Cultivation[]
+  iotDevices   IotDevice[]
+
+  @@index([locationLat, locationLng]) // Index สำหรับค้นหาพิกัด
+  @@map("farms")
+}
+
+model Product {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  category           ProductCategory
+  growthDurationDays Int
+  suitableMonths     Json?    // เก็บเป็น Array [1, 5, 9]
+  baseCostPerRai     Decimal? @db.Decimal(10, 2)
+  imageUrl           String?
+
+  // Relations
+  marketPrices MarketPrice[]
+  buyRequests  BuyRequest[]
+  cultivations Cultivation[]
+  priceAlerts  PriceAlert[]
+
+  @@map("products")
+}
+
+model MarketPrice {
+  id           BigInt   @id @default(autoincrement())
+  productId    Int
+  sourceName   String
+  priceMin     Decimal  @db.Decimal(10, 2)
+  priceMax     Decimal  @db.Decimal(10, 2)
+  dateRecorded DateTime @db.Date
+
+  product      Product  @relation(fields: [productId], references: [id])
+
+  @@index([productId, dateRecorded]) // Index สำหรับดึงกราฟราคา
+  @@map("market_prices")
+}
+
+model BuyRequest {
+  id               String       @id @default(cuid())
+  buyerId          String
+  productId        Int
+  quantityRequired Decimal      @db.Decimal(12, 2)
+  priceOffered     Decimal?     @db.Decimal(10, 2)
+  description      String?      @db.Text
+  expiryDate       DateTime     @db.Date
+  status           DemandStatus @default(OPEN)
+  createdAt        DateTime     @default(now())
+
+  // Relations
+  buyer     User       @relation(fields: [buyerId], references: [id])
+  product   Product    @relation(fields: [productId], references: [id])
+  contracts Contract[]
+
+  @@map("buy_requests")
+}
+
+model Cultivation {
+  id                  String            @id @default(cuid())
+  farmId              String
+  productId           Int
+  startDate           DateTime          @db.Date
+  expectedHarvestDate DateTime          @db.Date
+  estimatedYield      Decimal?          @db.Decimal(12, 2)
+  costDetails         Json?             // Stores detailed cost breakdown
+  activitySchedule    Json?             // Stores generated activity schedule
+  status              CultivationStatus @default(PLANNING)
+
+  // Relations
+  farm     Farm      @relation(fields: [farmId], references: [id])
+  product  Product   @relation(fields: [productId], references: [id])
+
+  contract Contract?
+  serviceBookings ServiceBooking[]
+
+  @@map("cultivations")
+}
+
+model Contract {
+  id             String         @id @default(cuid())
+  cultivationId  String         @unique
+  buyRequestId   String
+  farmerId       String
+  buyerId        String
+  agreedPrice    Decimal        @db.Decimal(10, 2)
+  agreedQuantity Decimal        @db.Decimal(12, 2)
+  status         ContractStatus @default(DRAFT)
+  signedAt       DateTime?
+
+  // Relations
+  cultivation Cultivation @relation(fields: [cultivationId], references: [id])
+  buyRequest  BuyRequest  @relation(fields: [buyRequestId], references: [id])
+  farmer      User        @relation("FarmerContracts", fields: [farmerId], references: [id])
+  buyer       User        @relation("BuyerContracts", fields: [buyerId], references: [id])
+
+  @@map("contracts")
+}
+
+// --- Promotion System ---
+enum PromotionType {
+  PERCENTAGE_DISCOUNT
+  FIXED_DISCOUNT
+  FREE_SHIPPING
+  BUNDLE_DEAL
+}
+
+enum PromotionStatus {
+  DRAFT
+  ACTIVE
+  SCHEDULED
+  EXPIRED
+  CANCELLED
+}
+
+model Promotion {
+  id             String          @id @default(cuid())
+  name           String
+  description    String?         @db.Text
+  type           PromotionType
+  discountValue  Decimal?        @db.Decimal(10, 2)
+  minPurchase    Decimal?        @db.Decimal(10, 2)
+  maxDiscount    Decimal?        @db.Decimal(10, 2)
+  startDate      DateTime
+  endDate        DateTime
+  status         PromotionStatus @default(DRAFT)
+  imageUrl       String?
+  bannerUrl      String?
+  targetProducts Int[]           // Array of product IDs
+  isPublic       Boolean         @default(true)
+  usageLimit     Int?
+  usageCount     Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  promoCodes     PromoCode[]
+
+  @@map("promotions")
+}
+
+model PromoCode {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  promotionId  String
+  isActive     Boolean   @default(true)
+  usageLimit   Int?
+  usageCount   Int       @default(0)
+  validFrom    DateTime?
+  validUntil   DateTime?
+  createdAt    DateTime  @default(now())
+
+  promotion    Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  @@map("promo_codes")
+}
+
+// --- Service Marketplace ---
+
+enum ServiceCategory {
+  HARVESTING
+  DRONE_SPRAYING
+  PLOUGHING
+  LABOR
+  CONSULTING
+  TRANSPORTATION
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  ON_THE_WAY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+model Service {
+  id             String          @id @default(cuid())
+  providerId     String
+  title          String
+  description    String?         @db.Text
+  category       ServiceCategory
+  price          Decimal         @db.Decimal(10, 2) // Price per unit
+  priceUnit      String          // e.g., "per rai", "per hour", "per job"
+  locationLat    Decimal         @db.Decimal(10, 8)
+  locationLng    Decimal         @db.Decimal(11, 8)
+  serviceRadius  Int             @default(50) // Radius in km
+  isAvailable    Boolean         @default(true)
+  imageUrl       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relations
+  provider       User            @relation(fields: [providerId], references: [id])
+  bookings       ServiceBooking[]
+
+  @@index([locationLat, locationLng])
+  @@map("services")
+}
+
+model ServiceBooking {
+  id             String        @id @default(cuid())
+  serviceId      String
+  farmerId       String
+  cultivationId  String?
+  bookingDate    DateTime
+  status         BookingStatus @default(PENDING)
+  notes          String?       @db.Text
+  totalPrice     Decimal?      @db.Decimal(10, 2)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  service        Service       @relation(fields: [serviceId], references: [id])
+  farmer         User          @relation(fields: [farmerId], references: [id])
+  cultivation    Cultivation?  @relation(fields: [cultivationId], references: [id])
+
+  @@map("service_bookings")
+}
+
+// --- Logistics & Transport ---
+
+enum VehicleType {
+  PICKUP_TRUCK
+  LORRY
+  TRACTOR
+  REFRIGERATED
+  FLATBED
+}
+
+enum TransportStatus {
+  OPEN
+  MATCHED
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
+
+model TransportVehicle {
+  id              String      @id @default(cuid())
+  ownerId         String
+  vehicleType     VehicleType
+  capacity        Decimal     @db.Decimal(10, 2) // in tons
+  description     String?     @db.Text
+  licensePlate    String?
+  basePricePerKm  Decimal     @db.Decimal(10, 2)
+  locationLat     Decimal     @db.Decimal(10, 8)
+  locationLng     Decimal     @db.Decimal(11, 8)
+  serviceRadius   Int         @default(50) // km
+  isAvailable     Boolean     @default(true)
+  imageUrl        String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  owner           User        @relation("OwnedVehicles", fields: [ownerId], references: [id])
+  transportRequests TransportRequest[]
+
+  @@index([locationLat, locationLng])
+  @@map("transport_vehicles")
+}
+
+model TransportRequest {
+  id              String          @id @default(cuid())
+  farmerId        String
+  vehicleId       String?
+  pickupLat       Decimal         @db.Decimal(10, 8)
+  pickupLng       Decimal         @db.Decimal(11, 8)
+  dropoffLat      Decimal         @db.Decimal(10, 8)
+  dropoffLng      Decimal         @db.Decimal(11, 8)
+  pickupAddress   String?
+  dropoffAddress  String?
+  cargoType       String          // e.g., "vegetables", "rice", "livestock"
+  cargoWeight     Decimal         @db.Decimal(10, 2) // in tons
+  requestedDate   DateTime        @db.Date
+  status          TransportStatus @default(OPEN)
+  priceOffered    Decimal?        @db.Decimal(10, 2)
+  notes           String?         @db.Text
+  isShareable     Boolean         @default(false) // Allow co-transportation
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  farmer          User            @relation("FarmerTransportRequests", fields: [farmerId], references: [id])
+  vehicle         TransportVehicle? @relation(fields: [vehicleId], references: [id])
+  routeParticipations TransportRouteParticipant[]
+
+  @@index([pickupLat, pickupLng])
+  @@index([requestedDate])
+  @@map("transport_requests")
+}
+
+model TransportRoute {
+  id              String          @id @default(cuid())
+  driverId        String
+  vehicleType     VehicleType
+  routeDate       DateTime        @db.Date
+  startLat        Decimal         @db.Decimal(10, 8)
+  startLng        Decimal         @db.Decimal(11, 8)
+  endLat          Decimal         @db.Decimal(10, 8)
+  endLng          Decimal         @db.Decimal(11, 8)
+  availableCapacity Decimal       @db.Decimal(10, 2)
+  pricePerKm      Decimal         @db.Decimal(10, 2)
+  status          TransportStatus @default(OPEN)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  driver          User            @relation("DriverRoutes", fields: [driverId], references: [id])
+  participants    TransportRouteParticipant[]
+
+  @@index([routeDate])
+  @@map("transport_routes")
+}
+
+model TransportRouteParticipant {
+  id              String          @id @default(cuid())
+  routeId         String
+  requestId       String
+  allocatedSpace  Decimal         @db.Decimal(10, 2) // tons
+  agreedPrice     Decimal         @db.Decimal(10, 2)
+  joinedAt        DateTime        @default(now())
+
+  route           TransportRoute  @relation(fields: [routeId], references: [id])
+  request         TransportRequest @relation(fields: [requestId], references: [id])
+
+  @@unique([routeId, requestId])
+  @@map("transport_route_participants")
+}
+
+// --- Knowledge Base ---
+
+enum ArticleCategory {
+  CROP_GUIDE
+  LIVESTOCK_GUIDE
+  PEST_CONTROL
+  SOIL_MANAGEMENT
+  WATER_MANAGEMENT
+  HARVESTING
+  POST_HARVEST
+  MARKET_TIPS
+  EQUIPMENT
+  GENERAL
+}
+
+model KnowledgeArticle {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  category        ArticleCategory
+  summary         String          @db.Text
+  content         String          @db.Text // Markdown content
+  coverImageUrl   String?
+  tags            String[]        // Array of tags for search
+  productIds      Int[]           // Related product IDs
+  viewCount       Int             @default(0)
+  isPublished     Boolean         @default(false)
+  authorId        String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  author          User?           @relation("AuthoredArticles", fields: [authorId], references: [id])
+
+  @@map("knowledge_articles")
+}
+
+// --- IoT Integration ---
+
+model IotDevice {
+  id            String      @id @default(cuid())
+  farmId        String
+  name          String
+  sensorType    SensorType
+  serialNumber  String?
+  locationLat   Decimal?    @db.Decimal(10, 8)
+  locationLng   Decimal?    @db.Decimal(11, 8)
+  isActive      Boolean     @default(true)
+  lastSeenAt    DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  farm          Farm        @relation(fields: [farmId], references: [id])
+  readings      IotReading[]
+
+  @@index([farmId])
+  @@map("iot_devices")
+}
+
+model IotReading {
+  id            BigInt      @id @default(autoincrement())
+  deviceId      String
+  value         Decimal     @db.Decimal(10, 4)
+  unit          String      // e.g., "%", "°C", "pH"
+  recordedAt    DateTime    @default(now())
+
+  device        IotDevice   @relation(fields: [deviceId], references: [id])
+
+  @@index([deviceId, recordedAt])
+  @@map("iot_readings")
+}
+
+// --- Waste & By-product Exchange ---
+
+model BiomassListing {
+  id              String            @id @default(cuid())
+  sellerId        String
+  category        WasteCategory
+  title           String
+  description     String?           @db.Text
+  quantity        Decimal           @db.Decimal(12, 2) // kg
+  unit            String            @default("kg")
+  pricePerUnit    Decimal           @db.Decimal(10, 2)
+  locationLat     Decimal           @db.Decimal(10, 8)
+  locationLng     Decimal           @db.Decimal(11, 8)
+  locationName    String?
+  imageUrl        String?
+  status          WasteListingStatus @default(AVAILABLE)
+  availableUntil  DateTime?         @db.Date
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  seller          User              @relation("SellerListings", fields: [sellerId], references: [id])
+
+  @@index([category, status])
+  @@index([locationLat, locationLng])
+  @@map("biomass_listings")
+}
+
+// --- Gamification ---
+
+model Quest {
+  id              String      @id @default(cuid())
+  type            QuestType
+  title           String
+  description     String      @db.Text
+  pointsReward    Int
+  iconName        String?     // Lucide icon name
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+
+  completions     QuestCompletion[]
+
+  @@map("quests")
+}
+
+model QuestCompletion {
+  id              String      @id @default(cuid())
+  userId          String
+  questId         String
+  completedAt     DateTime    @default(now())
+  pointsAwarded   Int
+
+  user            User        @relation(fields: [userId], references: [id])
+  quest           Quest       @relation(fields: [questId], references: [id])
+
+  @@unique([userId, questId, completedAt]) // Can complete same quest on different days
+  @@index([userId, completedAt])
+  @@map("quest_completions")
+}
+
+model RewardItem {
+  id              String      @id @default(cuid())
+  name            String
+  description     String      @db.Text
+  pointsCost      Int
+  category        String      // e.g., "fertilizer", "seeds", "service"
+  imageUrl        String?
+  stockQuantity   Int?        // null = unlimited
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+
+  redemptions     PointTransaction[]
+
+  @@map("reward_items")
+}
+
+model PointTransaction {
+  id              String          @id @default(cuid())
+  userId          String
+  type            TransactionType
+  points          Int             // positive for earned, negative for redeemed
+  description     String?
+  rewardItemId    String?
+  createdAt       DateTime        @default(now())
+
+  user            User            @relation(fields: [userId], references: [id])
+  rewardItem      RewardItem?     @relation(fields: [rewardItemId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("point_transactions")
+}
+
+// --- Notification System ---
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String           @db.Text
+  link        String?          // Optional link to navigate to
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
+}
+
+model PriceAlert {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   Int
+  targetPrice Decimal  @db.Decimal(10, 2)
+  isAbove     Boolean  @default(true) // true = alert when price >= target, false = alert when price <= target
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  triggeredAt DateTime?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@index([userId, isActive])
+  @@map("price_alerts")
+}
+
+model NotificationPreference {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  priceAlerts       Boolean  @default(true)
+  activityReminders Boolean  @default(true)
+  weatherAlerts     Boolean  @default(true)
+  contractUpdates   Boolean  @default(true)
+  serviceUpdates    Boolean  @default(true)
+  questRewards      Boolean  @default(true)
+  quietHoursStart   Int?     // Hour (0-23)
+  quietHoursEnd     Int?     // Hour (0-23)
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}

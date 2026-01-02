@@ -1,0 +1,389 @@
+import React, { useState } from 'react';
+import { Search, MapPin, Droplets, TrendingUp, TrendingDown, Sun, Users, Calendar, ArrowRight, ChevronLeft, Sprout,
+DollarSign, Truck, Moon } from 'lucide-react';
+
+const PlookAraiDeeWireframe = () => {
+const [currentView, setCurrentView] = useState('home'); // home, results, detail
+const [selectedCrop, setSelectedCrop] = useState(null);
+
+// Mock Data: ข้อมูลสมมติ
+const recommendedCrops = [
+{
+id: 1,
+name: "ข้าวโพดเลี้ยงสัตว์ (หลังนา)",
+type: "crop",
+matchScore: 95,
+price: "10.50 - 11.00",
+unit: "บาท/กก.",
+trend: "up",
+demand: "สูงมาก",
+harvestTime: "90-110 วัน",
+buyers: 3,
+profitEstimate: "4,500 - 6,000",
+imgColor: "bg-amber-900/40", // Darker background
+iconColor: "text-amber-400"
+},
+{
+id: 2,
+name: "มะเขือเทศโรงงาน",
+type: "crop",
+matchScore: 88,
+price: "4.50 - 5.00",
+unit: "บาท/กก.",
+trend: "stable",
+demand: "ปานกลาง",
+harvestTime: "75-90 วัน",
+buyers: 1,
+profitEstimate: "8,000 - 12,000",
+imgColor: "bg-rose-900/40",
+iconColor: "text-rose-400"
+},
+{
+id: 3,
+name: "ปลานิล (บ่อดิน)",
+type: "livestock",
+matchScore: 82,
+price: "45 - 55",
+unit: "บาท/กก.",
+trend: "down",
+demand: "คงที่",
+harvestTime: "4-6 เดือน",
+buyers: 5,
+profitEstimate: "15,000+",
+imgColor: "bg-sky-900/40",
+iconColor: "text-sky-400"
+}
+];
+
+// Components
+const MarketTicker = () => (
+<div className="bg-slate-950 border-b border-slate-800 text-slate-400 text-xs py-2 overflow-hidden whitespace-nowrap">
+    <div className="inline-flex animate-marquee space-x-8 px-4">
+        <span className="flex items-center text-emerald-400 font-medium">ข้าวหอมมะลิ: 14,500
+            <TrendingUp size={12} className="ml-1" />
+        </span>
+        <span className="flex items-center text-rose-400">ยางพารา: 52.00
+            <TrendingDown size={12} className="ml-1" />
+        </span>
+        <span className="flex items-center text-amber-400">มันสำปะหลัง: 3.10
+            <TrendingUp size={12} className="ml-1" />
+        </span>
+        <span className="flex items-center text-slate-400">ปาล์มน้ำมัน: 6.50
+            <TrendingUp size={12} className="ml-1" />
+        </span>
+    </div>
+</div>
+);
+
+const BottomNav = () => (
+<div
+    className="fixed bottom-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-slate-800 py-3 px-6 flex justify-between items-center text-slate-500 z-50 max-w-md mx-auto left-0 right-0">
+    <div className={`flex flex-col items-center ${currentView==='home' ? 'text-emerald-400' : '' }`} onClick={()=>
+        setCurrentView('home')}>
+        <Search size={24} />
+        <span className="text-[10px] mt-1 font-medium">หน้าแรก</span>
+    </div>
+    <div className="flex flex-col items-center hover:text-emerald-400 transition-colors">
+        <TrendingUp size={24} />
+        <span className="text-[10px] mt-1 font-medium">ราคาตลาด</span>
+    </div>
+    <div className="flex flex-col items-center hover:text-emerald-400 transition-colors">
+        <Calendar size={24} />
+        <span className="text-[10px] mt-1 font-medium">ปฏิทิน</span>
+    </div>
+    <div className="flex flex-col items-center hover:text-emerald-400 transition-colors">
+        <Users size={24} />
+        <span className="text-[10px] mt-1 font-medium">โปรไฟล์</span>
+    </div>
+</div>
+);
+
+// Views
+const HomeView = () => (
+<div className="pb-20">
+    {/* Header Dark Gradient */}
+    <div
+        className="bg-gradient-to-b from-emerald-900 to-slate-900 text-white p-6 pt-8 rounded-b-[40px] shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4 text-emerald-300">
+            <Sprout size={180} />
+        </div>
+        <div className="relative z-10">
+            <h1 className="text-3xl font-bold mb-1 tracking-tight text-emerald-400">ปลูกอะไรดี?</h1>
+            <p className="text-slate-300 text-sm mb-6 font-medium">จับคู่พืชเศรษฐกิจให้ตรงกับดินและตลาด</p>
+
+            <div
+                className="bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 shadow-xl text-slate-300 space-y-5 border border-slate-700">
+                <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">พื้นที่ของคุณ</label>
+                    <div className="flex items-center border-b border-slate-600 py-2">
+                        <MapPin size={18} className="text-emerald-400 mr-3" />
+                        <select className="w-full bg-transparent outline-none text-sm font-medium text-slate-200">
+                            <option className="bg-slate-800">อ.เมือง, นครปฐม</option>
+                            <option className="bg-slate-800">อ.กำแพงแสน, นครปฐม</option>
+                            <option className="bg-slate-800">ระบุตำแหน่ง GPS</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">แหล่งน้ำ</label>
+                    <div className="flex items-center border-b border-slate-600 py-2">
+                        <Droplets size={18} className="text-sky-400 mr-3" />
+                        <select className="w-full bg-transparent outline-none text-sm font-medium text-slate-200">
+                            <option className="bg-slate-800">มีน้ำตลอดปี (ชลประทาน)</option>
+                            <option className="bg-slate-800">น้ำบาดาล</option>
+                            <option className="bg-slate-800">รอฝนอย่างเดียว</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">ขนาดพื้นที่</label>
+                    <div className="flex items-center border-b border-slate-600 py-2">
+                        <Sun size={18} className="text-amber-400 mr-3" />
+                        <input type="text" placeholder="ระบุจำนวนไร่"
+                            className="w-full bg-transparent outline-none text-sm font-medium text-slate-200 placeholder-slate-500"
+                            defaultValue="10 ไร่" />
+                    </div>
+                </div>
+
+                <button onClick={()=> setCurrentView('results')}
+                    className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-500
+                    transition-all shadow-lg shadow-emerald-900/50 flex justify-center items-center group"
+                    >
+                    ค้นหาพืชที่เหมาะสม
+                    <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div className="p-6">
+        <h2 className="text-lg font-bold text-slate-200 mb-4">แนะนำตามฤดูกาล (กุมภาพันธ์)</h2>
+        <div className="flex space-x-4 overflow-x-auto pb-4 no-scrollbar">
+            {[1,2,3].map((i) => (
+            <div key={i}
+                className="min-w-[140px] bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-700 flex-shrink-0 hover:border-slate-600 transition-all">
+                <div
+                    className="w-12 h-12 bg-emerald-900/50 rounded-full flex items-center justify-center mb-3 text-emerald-400 border border-emerald-900">
+                    <Sprout size={24} />
+                </div>
+                <p className="text-sm font-bold text-slate-200">ถั่วเหลือง</p>
+                <p className="text-xs text-emerald-400 font-medium">+ ราคาขึ้น 5%</p>
+            </div>
+            ))}
+        </div>
+
+        <h2 className="text-lg font-bold text-slate-200 mb-4 mt-2">ข่าวสารเกษตร</h2>
+        <div className="bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-700 flex gap-4">
+            <div className="w-20 h-20 bg-slate-700 rounded-xl flex-shrink-0"></div>
+            <div>
+                <h3 className="text-sm font-bold line-clamp-2 text-slate-200">โรงงานซอสรับซื้อไม่อั้น!
+                    มะเขือเทศขาดตลาดหนัก</h3>
+                <p className="text-xs text-slate-400 mt-2">2 ชั่วโมงที่แล้ว</p>
+            </div>
+        </div>
+    </div>
+</div>
+);
+
+const ResultsView = () => (
+<div className="pb-20 bg-slate-900 min-h-screen">
+    <div
+        className="bg-slate-900/90 backdrop-blur-md p-4 sticky top-0 z-20 shadow-md border-b border-slate-800 flex items-center">
+        <button onClick={()=> setCurrentView('home')} className="p-2 -ml-2 text-slate-400 hover:text-emerald-400
+            transition">
+            <ChevronLeft />
+        </button>
+        <div className="ml-2">
+            <h1 className="text-lg font-bold text-slate-200">ผลการวิเคราะห์</h1>
+            <p className="text-xs text-slate-500">อ.เมือง นครปฐม • 10 ไร่ • มีน้ำตลอดปี</p>
+        </div>
+    </div>
+
+    <div className="p-4 space-y-4">
+        <div className="bg-sky-900/30 border border-sky-800/50 p-4 rounded-2xl flex items-start gap-3">
+            <div className="bg-sky-900 p-2 rounded-full text-sky-400 shadow-sm">
+                <Users size={16} />
+            </div>
+            <div>
+                <p className="text-xs text-sky-300 font-bold mb-1">ตลาดต้องการสูง!</p>
+                <p className="text-xs text-sky-400/80 leading-relaxed font-medium">
+                    ในรัศมี 20 กม. มีโรงงานรับซื้ออาหารสัตว์ 2 แห่งกำลังขาดแคลนวัตถุดิบ
+                </p>
+            </div>
+        </div>
+
+        {recommendedCrops.map((crop) => (
+        <div key={crop.id} onClick={()=> { setSelectedCrop(crop); setCurrentView('detail'); }}
+            className="bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-700 hover:border-emerald-500/50
+            hover:bg-slate-750 transition-all cursor-pointer relative overflow-hidden group"
+            >
+            <div
+                className="absolute top-0 right-0 bg-emerald-900/80 text-emerald-400 text-[10px] font-bold px-3 py-1.5 rounded-bl-xl border-l border-b border-emerald-900">
+                Match {crop.matchScore}%
+            </div>
+
+            <div className="flex gap-4">
+                <div className={`w-20 h-20 ${crop.imgColor} rounded-xl flex items-center justify-center flex-shrink-0
+                    transition-transform group-hover:scale-105 border border-white/5`}>
+                    <Sprout size={32} className={crop.iconColor} />
+                </div>
+                <div className="flex-1 pt-1">
+                    <h3 className="font-bold text-slate-200 text-lg">{crop.name}</h3>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span
+                            className="text-[10px] bg-slate-900 px-2 py-1 rounded-md text-slate-400 border border-slate-700">{crop.harvestTime}</span>
+                        <span
+                            className="text-[10px] bg-slate-900 px-2 py-1 rounded-md text-slate-400 border border-slate-700">ตลาด
+                            {crop.buyers} แห่ง</span>
+                    </div>
+                    <div className="flex justify-between items-end mt-4">
+                        <div>
+                            <p className="text-[10px] text-slate-500 mb-0.5">ราคาปัจจุบัน</p>
+                            <p className="font-bold text-emerald-400 text-lg">{crop.price} <span
+                                    className="text-xs text-slate-500 font-normal">{crop.unit}</span></p>
+                        </div>
+                        {crop.trend === 'up' &&
+                        <TrendingUp size={20} className="text-emerald-500" />}
+                        {crop.trend === 'down' &&
+                        <TrendingDown size={20} className="text-rose-500" />}
+                        {crop.trend === 'stable' &&
+                        <TrendingUp size={20} className="text-slate-600 rotate-90" />}
+                    </div>
+                </div>
+            </div>
+        </div>
+        ))}
+    </div>
+</div>
+);
+
+const DetailView = () => {
+if (!selectedCrop) return null;
+return (
+<div className="pb-24 bg-slate-900 min-h-screen">
+    <div className={`h-56 ${selectedCrop.imgColor} relative transition-colors duration-500`}>
+        <button onClick={()=> setCurrentView('results')}
+            className="absolute top-4 left-4 bg-black/40 backdrop-blur-md p-2 rounded-full text-slate-200
+            hover:bg-black/60 transition"
+            >
+            <ChevronLeft />
+        </button>
+        <div
+            className="absolute bottom-0 w-full p-8 pb-10 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent">
+            {/* Gradient overlay for smooth transition */}
+        </div>
+        <div className="absolute bottom-6 left-6 right-6">
+            <h1 className="text-3xl font-bold text-white drop-shadow-md">{selectedCrop.name}</h1>
+        </div>
+    </div>
+
+    <div
+        className="p-6 -mt-6 bg-slate-900 rounded-t-[32px] relative z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] border-t border-slate-800">
+
+        <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-6">
+            <div className="text-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">ความเหมาะสม</p>
+                <div className="text-emerald-400 font-bold text-2xl flex items-center justify-center">
+                    {selectedCrop.matchScore}%
+                </div>
+            </div>
+            <div className="w-px h-10 bg-slate-800"></div>
+            <div className="text-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">ระยะเวลา</p>
+                <p className="text-slate-200 font-bold text-lg">{selectedCrop.harvestTime}</p>
+            </div>
+            <div className="w-px h-10 bg-slate-800"></div>
+            <div className="text-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">กำไร/ไร่</p>
+                <p className="text-emerald-400 font-bold text-lg">{selectedCrop.profitEstimate}</p>
+            </div>
+        </div>
+
+        <h2 className="font-bold text-slate-200 text-lg mb-4 flex items-center">
+            <div
+                className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center mr-3 text-emerald-500 border border-slate-700">
+                <Truck size={16} />
+            </div>
+            ตลาดที่รับซื้อ (ใกล้คุณ)
+        </h2>
+        <div className="space-y-3 mb-8">
+            <div
+                className="border border-emerald-900/50 bg-emerald-900/20 rounded-2xl p-4 flex justify-between items-center">
+                <div>
+                    <p className="font-bold text-sm text-slate-200">สหกรณ์การเกษตร A</p>
+                    <p className="text-xs text-slate-400 mt-0.5">ห่าง 5 กม. • รับไม่อั้น</p>
+                </div>
+                <button
+                    className="bg-emerald-600 text-white text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-900/20 hover:bg-emerald-500 transition font-bold">
+                    ทำสัญญา
+                </button>
+            </div>
+            <div
+                className="border border-slate-700 rounded-2xl p-4 flex justify-between items-center opacity-80 bg-slate-800/50">
+                <div>
+                    <p className="font-bold text-sm text-slate-200">โรงงานแปรรูป B</p>
+                    <p className="text-xs text-slate-400 mt-0.5">ห่าง 12 กม. • เกรด A เท่านั้น</p>
+                </div>
+                <button
+                    className="bg-transparent border border-emerald-500 text-emerald-400 text-xs px-4 py-2 rounded-xl font-bold hover:bg-emerald-500/10">
+                    ดูเงื่อนไข
+                </button>
+            </div>
+        </div>
+
+        <h2 className="font-bold text-slate-200 text-lg mb-4 flex items-center">
+            <div
+                className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center mr-3 text-amber-500 border border-slate-700">
+                <DollarSign size={16} />
+            </div>
+            ต้นทุนโดยประมาณ (ต่อไร่)
+        </h2>
+        <div className="bg-slate-800/50 rounded-2xl p-5 space-y-3 mb-8 text-sm border border-slate-800">
+            <div className="flex justify-between items-center">
+                <span className="text-slate-400">ค่าเมล็ดพันธุ์</span>
+                <span className="font-medium text-slate-200">450 บ.</span>
+            </div>
+            <div className="flex justify-between items-center">
+                <span className="text-slate-400">ค่าเตรียมดิน/ปุ๋ย</span>
+                <span className="font-medium text-slate-200">1,200 บ.</span>
+            </div>
+            <div className="flex justify-between items-center">
+                <span className="text-slate-400">ค่าแรงดูแล</span>
+                <span className="font-medium text-slate-200">2,000 บ.</span>
+            </div>
+            <div
+                className="border-t border-slate-700 pt-3 mt-2 flex justify-between font-bold text-slate-100 text-base">
+                <span>รวมต้นทุน</span>
+                <span>3,650 บ.</span>
+            </div>
+        </div>
+
+        <button
+            className="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-900/50 hover:bg-emerald-500 hover:shadow-emerald-900/70 transition-all transform active:scale-[0.98]">
+            เริ่มวางแผนการปลูก
+        </button>
+    </div>
+</div>
+);
+}
+
+return (
+<div
+    className="bg-slate-900 min-h-screen font-sans max-w-md mx-auto shadow-2xl shadow-black overflow-hidden border-x border-slate-800 relative">
+    <MarketTicker />
+
+    {currentView === 'home' &&
+    <HomeView />}
+    {currentView === 'results' &&
+    <ResultsView />}
+    {currentView === 'detail' &&
+    <DetailView />}
+
+    <BottomNav />
+</div>
+);
+};
+
+export default PlookAraiDeeWireframe;
