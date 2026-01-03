@@ -1,6 +1,7 @@
 'use client';
 
 import { Crop } from '@/types';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
@@ -125,9 +126,19 @@ const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
 };
 
 export const CropDetailPanel = ({ crop, isOpen, onClose }: CropDetailPanelProps) => {
+    const router = useRouter();
+
     if (!crop) return null;
 
     const analysis = getMarketAnalysis(crop);
+
+    const handleStartPlanning = () => {
+        router.push(`/farmer/plan?productId=${crop.id}`);
+    };
+
+    const handleViewContracts = () => {
+        router.push(`/farmer/match?productId=${crop.id}`);
+    };
 
     return (
         <AnimatePresence>
@@ -283,10 +294,16 @@ export const CropDetailPanel = ({ crop, isOpen, onClose }: CropDetailPanelProps)
 
                             {/* Action Buttons */}
                             <div className="space-y-3">
-                                <button className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg shadow-emerald-900/30 border border-emerald-500/30">
+                                <button
+                                    onClick={handleStartPlanning}
+                                    className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg shadow-emerald-900/30 border border-emerald-500/30"
+                                >
                                     เริ่มวางแผนปลูก
                                 </button>
-                                <button className="w-full py-4 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700">
+                                <button
+                                    onClick={handleViewContracts}
+                                    className="w-full py-4 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                                >
                                     ดูสัญญาที่เปิดรับ
                                 </button>
                             </div>
