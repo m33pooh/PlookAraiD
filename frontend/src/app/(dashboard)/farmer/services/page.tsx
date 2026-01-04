@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import {
     Search,
@@ -44,7 +44,7 @@ const categories = [
     { id: 'TRANSPORTATION', label: 'ขนส่ง', icon: Tractor },
 ];
 
-export default function ServicesPage() {
+function ServicesContent() {
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [services, setServices] = useState<any[]>([]);
@@ -380,4 +380,12 @@ function BookingDialog({ open, onOpenChange, service, cultivationId, prefilledDa
             </div>
         </Modal>
     )
+}
+
+export default function ServicesPage() {
+    return (
+        <Suspense fallback={<div className="text-white text-center py-10">Loading marketplace...</div>}>
+            <ServicesContent />
+        </Suspense>
+    );
 }

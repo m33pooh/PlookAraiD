@@ -16,7 +16,7 @@ function getRoleLandingPage(role: string): string {
     }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const { nextUrl } = req;
 
     // Get JWT token from the request

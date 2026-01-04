@@ -133,11 +133,7 @@ export function LoginForm() {
                             />
                         </div>
 
-                        <div className="flex items-center justify-end text-sm">
-                            <Link href="/forgot-password" className="text-emerald-400 hover:text-emerald-300">
-                                ลืมรหัสผ่าน?
-                            </Link>
-                        </div>
+
 
                         <Button type="submit" className="w-full gap-2" disabled={isLoading}>
                             {isLoading ? (

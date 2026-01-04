@@ -253,9 +253,9 @@ export default function FarmerDashboard() {
                                     <h3 className="text-sm font-medium text-white">ประกาศรับซื้อใหม่</h3>
                                     <p className="text-xs text-slate-400">4 รายการในพื้นที่ของคุณ</p>
                                 </div>
-                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                                <div className="h-9 w-9 flex items-center justify-center rounded-md hover:bg-slate-800 text-slate-400 hover:text-white">
                                     <ArrowRight size={18} />
-                                </Button>
+                                </div>
                             </div>
                         </Card>
                     </Link>

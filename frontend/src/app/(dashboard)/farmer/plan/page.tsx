@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
     MapPin,
@@ -63,7 +63,7 @@ interface WeatherData {
     };
 }
 
-export default function MyPlanPage() {
+function PlanPageContent() {
     const searchParams = useSearchParams();
     const preselectedProductId = searchParams.get('productId');
 
@@ -371,5 +371,13 @@ export default function MyPlanPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function MyPlanPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading plan...</div>}>
+            <PlanPageContent />
+        </Suspense>
     );
 }

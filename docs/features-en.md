@@ -145,7 +145,16 @@ Centralized system for managing all alerts and notifications across the platform
   - Service Booking Updates (Service Marketplace)
   - Quest Rewards & Points (Gamification)
 
+
+## 📊 14. Data Analytics
+- [x] **Farmer Analytics Dashboard:**
+  - **Yield History:** Visualize historical harvest quantities over time.
+  - **Financial Performance:** Track estimated income (from Contracts) vs. estimated costs (from Cultivation per-rai costs).
+  - **Crop Performance:** Compare profitability of different crops.
+  > ✅ Implemented: Analytics dashboard at `/farmer/analytics`. Aggregates data from Cultivations and Contracts.
+
 ---
+
 
 ## 🎮 13. Gamification
 - [x] **Daily Quest:** Daily missions (e.g., Log activity, Take a photo of the plot) to earn points.

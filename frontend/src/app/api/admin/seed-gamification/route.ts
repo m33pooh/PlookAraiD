@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // Seed initial quests and rewards (admin only)
+import { QuestType } from "@prisma/client";
+
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
@@ -15,42 +17,42 @@ export async function POST(req: Request) {
         // Seed Quests
         const quests = [
             {
-                type: "DAILY_LOGIN",
+                type: QuestType.DAILY_LOGIN,
                 title: "เข้าสู่ระบบวันนี้",
                 description: "เข้าสู่ระบบแอปวันนี้เพื่อรับแต้ม",
                 pointsReward: 10,
                 iconName: "LogIn",
             },
             {
-                type: "LOG_ACTIVITY",
+                type: QuestType.LOG_ACTIVITY,
                 title: "บันทึกกิจกรรม",
                 description: "บันทึกกิจกรรมการเพาะปลูกหรือการดูแลแปลง",
                 pointsReward: 20,
                 iconName: "FileText",
             },
             {
-                type: "PHOTO_UPLOAD",
+                type: QuestType.PHOTO_UPLOAD,
                 title: "ถ่ายภาพแปลง",
                 description: "อัปโหลดภาพแปลงเกษตรของคุณ",
                 pointsReward: 25,
                 iconName: "Camera",
             },
             {
-                type: "MARKET_CHECK",
+                type: QuestType.MARKET_CHECK,
                 title: "เช็คราคาตลาด",
                 description: "ดูราคาตลาดวันนี้",
                 pointsReward: 15,
                 iconName: "BarChart3",
             },
             {
-                type: "PLAN_UPDATE",
+                type: QuestType.PLAN_UPDATE,
                 title: "อัปเดตแผนการผลิต",
                 description: "สร้างหรืออัปเดตแผนการเพาะปลูก",
                 pointsReward: 30,
                 iconName: "Target",
             },
             {
-                type: "IOT_CHECK",
+                type: QuestType.IOT_CHECK,
                 title: "ตรวจสอบเซ็นเซอร์",
                 description: "ดูข้อมูลจาก IoT devices ของคุณ",
                 pointsReward: 15,
