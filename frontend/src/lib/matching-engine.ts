@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { Farm, Product, BuyRequest, Cultivation, WaterSource } from "../../prisma/generated/client";
+import { Farm, Product, BuyRequest, Cultivation, WaterSource } from "@prisma/client";
 
 // Types for Recommendation Result
 export interface Recommendation {

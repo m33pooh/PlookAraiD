@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { BookingStatus } from "../../../../../../prisma/generated/client";
+import { BookingStatus } from "@prisma/client";
 
 export async function PATCH(
     req: Request,
