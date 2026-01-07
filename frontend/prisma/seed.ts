@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient, Role, WaterSource, ProductCategory, DemandStatus, CultivationStatus, ContractStatus, PromotionType, PromotionStatus } from './generated/client';
+import { PrismaClient, Role, WaterSource, ProductCategory, DemandStatus, CultivationStatus, ContractStatus, PromotionType, PromotionStatus } from "@prisma/client";
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcryptjs';
 
