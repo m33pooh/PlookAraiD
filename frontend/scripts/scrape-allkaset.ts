@@ -11,7 +11,7 @@
 
 import 'dotenv/config';
 import { parse } from 'node-html-parser';
-import { PrismaClient, ProductCategory } from '../prisma/generated/client';
+import { PrismaClient, ProductCategory } from "@prisma/client";
 import { PrismaPg } from '@prisma/adapter-pg';
 
 // Prisma client setup
