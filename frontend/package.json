@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "scrape:allkaset": "npx tsx scripts/scrape-allkaset.ts",
-    "seed": "npx tsx prisma/seed.ts",
-    "seed-services": "npx tsx prisma/seed-services.ts"
+    "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient, Role, WaterSource, ProductCategory, DemandStatus, CultivationStatus, ContractStatus, PromotionType, PromotionStatus } from "@prisma/client";
+import { PrismaClient, Role, WaterSource, ProductCategory, DemandStatus, CultivationStatus, ContractStatus, PromotionType, PromotionStatus, ServiceCategory } from "@prisma/client";
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcryptjs';
 
@@ -388,6 +388,67 @@ async function main() {
 
     console.log(`✅ Created 4 farms`);
 
+    // Create Services
+    console.log('🛠️ Creating services...');
+    const servicesData = [
+        {
+            title: 'บริการรถไถพรวนดิน',
+            description: 'รถไถคูโบต้า 50 แรงม้า พร้อมผานพรวน 3 และ 7 รับงานโซนขอนแก่นและใกล้เคียง',
+            category: ServiceCategory.PLOUGHING,
+            price: 350,
+            priceUnit: 'ต่อไร่',
+            locationLat: 16.4329,
+            locationLng: 102.8236,
+            serviceRadius: 30,
+            imageUrl: 'https://images.unsplash.com/photo-1599939571322-792a326l4c5a?w=800&q=80',
+        },
+        {
+            title: 'โดรนพ่นยาเกษตร DJI T30',
+            description: 'บริการพ่นยาฮอร์โมน ปุ๋ยน้ำ ด้วยโดรนเกษตร DJI T30 รวดเร็ว ทั่วถึง ประหยัดเวลา',
+            category: ServiceCategory.DRONE_SPRAYING,
+            price: 120,
+            priceUnit: 'ต่อไร่',
+            locationLat: 16.4400,
+            locationLng: 102.8300,
+            serviceRadius: 50,
+            imageUrl: 'https://images.unsplash.com/photo-1624397772420-17983b6329c2?w=800&q=80',
+        },
+        {
+            title: 'รถเกี่ยวนวดข้าว Kubota DC-70',
+            description: 'รับจ้างเกี่ยวข้าวนาปี นาปรัง เมล็ดพันธุ์สะอาด สูญเสียน้อย',
+            category: ServiceCategory.HARVESTING,
+            price: 600,
+            priceUnit: 'ต่อไร่',
+            locationLat: 16.4200,
+            locationLng: 102.8100,
+            serviceRadius: 40,
+            imageUrl: 'https://images.unsplash.com/photo-1595126732328-910a9754407b?w=800&q=80',
+        },
+        {
+            title: 'แรงงานขนย้ายผลผลิต',
+            description: 'ทีมงาน 5 คน รับจ้างขนย้ายข้าว มันสำปะหลัง อ้อย ขึ้นรถบรรทุก',
+            category: ServiceCategory.LABOR,
+            price: 500,
+            priceUnit: 'ต่อวัน/คน',
+            locationLat: 16.4350,
+            locationLng: 102.8250,
+            serviceRadius: 20,
+            imageUrl: 'https://images.unsplash.com/photo-1615811361523-6bd03c779979?w=800&q=80',
+        }
+    ];
+
+    for (const s of servicesData) {
+        await prisma.service.create({
+            data: {
+                providerId: farmer1.id,
+                isAvailable: true,
+                ...s,
+            }
+        });
+    }
+
+    console.log(`✅ Created ${servicesData.length} services`);
+
     // Create Market Prices (historical data)
     console.log('📊 Creating market prices...');
     const marketPriceData = [];
@@ -639,6 +700,7 @@ async function main() {
     console.log('   - 6 Users (1 Admin, 3 Farmers, 2 Buyers)');
     console.log('   - 16 Products (10 Crops, 3 Livestock, 3 Aquatic)');
     console.log('   - 4 Farms');
+    console.log('   - 4 Services');
     console.log(`   - ${marketPriceData.length} Market Price records`);
     console.log('   - 4 Buy Requests');
     console.log('   - 4 Cultivations');
