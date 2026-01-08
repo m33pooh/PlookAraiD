@@ -1,5 +1,5 @@
 [build]
-  command = "npx prisma generate && prisma db push && prisma migrate deploy && prisma db seed && prisma db seed --seed=seed-services.ts && npm run build"
+  command = "npx prisma generate && prisma db push && prisma migrate deploy && prisma db seed && prisma db seed-services && npm run build"
   publish = ".next"
 
 [[plugins]]
