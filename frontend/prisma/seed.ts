@@ -11,12 +11,46 @@ async function main() {
 
     // Clean existing data
     console.log('🧹 Cleaning existing data...');
+    // Logistics & Transport (depend on User)
+    await prisma.transportRouteParticipant.deleteMany();
+    await prisma.transportRequest.deleteMany();
+    await prisma.transportRoute.deleteMany();
+    await prisma.transportVehicle.deleteMany();
+
+    // Services (depend on User, Farm, Cultivation)
+    await prisma.serviceBooking.deleteMany();
+    await prisma.service.deleteMany();
+
+    // Waste Exchange
+    await prisma.biomassListing.deleteMany();
+
+    // Knowledge Base
+    await prisma.knowledgeArticle.deleteMany();
+
+    // IoT (depend on Farm)
+    await prisma.iotReading.deleteMany();
+    await prisma.iotDevice.deleteMany();
+
+    // Gamification & Points
+    await prisma.pointTransaction.deleteMany();
+    await prisma.questCompletion.deleteMany();
+    await prisma.rewardItem.deleteMany();
+    await prisma.quest.deleteMany();
+
+    // Notifications & User Preferences
+    await prisma.notification.deleteMany();
+    await prisma.priceAlert.deleteMany();
+    await prisma.notificationPreference.deleteMany();
+
+    // Core Business Logic
     await prisma.promoCode.deleteMany();
     await prisma.promotion.deleteMany();
     await prisma.contract.deleteMany();
     await prisma.cultivation.deleteMany();
     await prisma.buyRequest.deleteMany();
     await prisma.marketPrice.deleteMany();
+
+    // Core Entities
     await prisma.farm.deleteMany();
     await prisma.product.deleteMany();
     await prisma.userProfile.deleteMany();
@@ -615,7 +649,8 @@ async function main() {
 
 main()
     .catch((e) => {
-        console.error('❌ Seeding failed:', e);
+        console.error('❌ Seeding failed:', JSON.stringify(e, null, 2));
+        console.error(e);
         process.exit(1);
     })
     .finally(async () => {
